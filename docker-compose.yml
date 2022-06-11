@@ -1,0 +1,22 @@
+# Use postgres/example user/password credentials
+version: '3.8'
+services:
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=43320
+    ports:
+      - '5432:5432'
+    env_file:
+      - app.env
+      
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@domain.com
+      PGADMIN_DEFAULT_PASSWORD: 43320
+    ports:
+      - 5050:80
