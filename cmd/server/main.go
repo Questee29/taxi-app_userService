@@ -7,6 +7,7 @@ import (
 	config "github.com/Questee29/taxi-app_userService/configs"
 	"github.com/Questee29/taxi-app_userService/database"
 	"github.com/Questee29/taxi-app_userService/middleware"
+	_ "github.com/Questee29/taxi-app_userService/migrations"
 	logout "github.com/Questee29/taxi-app_userService/pkg/handlers/log-out"
 	signin "github.com/Questee29/taxi-app_userService/pkg/handlers/sign-in"
 	signup "github.com/Questee29/taxi-app_userService/pkg/handlers/sign-up"

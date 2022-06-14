@@ -9,6 +9,7 @@ type database struct {
 	User     string `mapstructure:"DB_USER"`
 	Password string `mapstructure:"DB_PASSWORD"`
 	DBName   string `mapstructure:"DB_NAME"`
+	DBReload bool   `mapstructure:"DB_RELOAD"`
 }
 type server struct {
 	Host string `mapstructure:"SERVER_HOST"`
