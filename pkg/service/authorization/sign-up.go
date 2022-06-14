@@ -4,6 +4,7 @@ import (
 	"log"
 	"regexp"
 	"unicode"
+	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -12,31 +13,35 @@ func (service *authService) IsPasswordValid(password string) bool {
 	// upp: at least one upper case letter.
 	// low: at least one lower case letter.
 	// num: at least one digit.
-	// sym: at least one special character.
+
 	// tot: at least eight characters long.
 	// No empty string or whitespace.
 	var (
 		upp, low, num bool
-		tot           uint8
+		tot           int
 	)
+	tot = utf8.RuneCountInString(password)
+	if tot < 8 {
+		return false
+	}
 	for _, char := range password {
 		switch {
 		case unicode.IsUpper(char):
 			upp = true
-			tot++
+
 		case unicode.IsLower(char):
 			low = true
-			tot++
+
 		case unicode.IsNumber(char):
 			num = true
-			tot++
-		case unicode.IsPunct(char) || unicode.IsSymbol(char):
+		case unicode.IsPunct(char) || unicode.IsSymbol(char): //if special char
 			return false
 		default:
 			return false
 		}
 	}
-	if !upp || !low || !num || tot < 8 {
+
+	if !upp || !low || !num {
 		return false
 	}
 	return true
@@ -54,7 +59,7 @@ func (service *authService) IsNumberValid(number string) bool {
 	return numberRegex.MatchString(number)
 }
 func (service *authService) IsRegistred(email, number string) (bool, error) {
-	return service.repository.FindCopies(email, number)
+	return service.repository.IsRegistred(email, number)
 }
 
 func (service *authService) GeneratePasswordHash(password string) (string, error) {

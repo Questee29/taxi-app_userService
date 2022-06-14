@@ -6,15 +6,16 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 
 	user "github.com/Questee29/taxi-app_userService/models/user"
 )
 
 type Repository interface {
-	GetUser(phone, password string) (user.AuthDetails, error)
+	GetUser(phone, password string) (user.ResponseAuthDetails, error)
 	GetName(phone string) (string, error)
-	MatchPass(password, hashPassword string) bool
-	FindCopies(email, number string) (bool, error)
+
+	IsRegistred(email, number string) (bool, error)
 	CreateUser(name, phone, email, hashPass string) error
 }
 type authService struct {
@@ -46,6 +47,10 @@ func (service *authService) GenerateJWT(phone, password string) (string, error) 
 		return "", err
 	}
 
+	if err := service.MatchPass(password, user.HashPassword); err != nil {
+		return "", err
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(tokenExpires).Unix(),
@@ -56,6 +61,7 @@ func (service *authService) GenerateJWT(phone, password string) (string, error) 
 	})
 
 	return token.SignedString([]byte(jwtKey))
+
 }
 
 func (service *authService) ParseToken(tokenString string) (string, error) {
@@ -98,4 +104,11 @@ func (service *authService) DeleteToken(tokenString string) error {
 
 func (service *authService) GetName(phone string) (string, error) {
 	return service.repository.GetName(phone)
+}
+
+func (service *authService) MatchPass(password, HashPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(HashPassword), []byte(password)); err != nil {
+		return err
+	}
+	return nil
 }

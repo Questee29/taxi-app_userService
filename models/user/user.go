@@ -11,3 +11,7 @@ type AuthDetails struct {
 	Phone    string `json:"phone"`
 	Password string `json:"password"`
 }
+type ResponseAuthDetails struct {
+	Phone        string `json:"phone"`
+	HashPassword string `json:"HashPassword"`
+}

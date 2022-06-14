@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func CheckAuthorizedBearer(next http.Handler, authService ParserToken) http.Handler {
+func CheckAuthorizedBearer(next http.Handler, authService TokenParser) http.Handler {
 	return &authorizationBearerCheck{
 		next:        next,
 		authService: authService,
@@ -21,14 +21,14 @@ const (
 	ContextUserKey      ContextKey = "name"
 )
 
-type ParserToken interface {
+type TokenParser interface {
 	ParseToken(tokenString string) (string, error)
 	GetName(phone string) (string, error)
 }
 
 type authorizationBearerCheck struct {
 	next        http.Handler
-	authService ParserToken
+	authService TokenParser
 }
 
 func (m *authorizationBearerCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {

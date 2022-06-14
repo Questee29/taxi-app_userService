@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
+	config "github.com/Questee29/taxi-app_userService/configs"
 	"github.com/Questee29/taxi-app_userService/database"
 	"github.com/Questee29/taxi-app_userService/middleware"
 	logout "github.com/Questee29/taxi-app_userService/pkg/handlers/log-out"
@@ -14,7 +16,14 @@ import (
 )
 
 func main() {
-	db := database.New()
+	config, err := config.LoadConfig("app", ".")
+	if err != nil {
+		log.Fatal("cannot load config", err)
+	}
+	db, err := database.New()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	usersRepository := authRepository.New(db)
 	authService := authService.New(usersRepository)
@@ -28,5 +37,5 @@ func main() {
 	http.Handle("/welcome", middleware.SetContentTypeJSON(middleware.CheckAuthorizedBearer(handlerWelcome, authService)))
 	http.Handle("/logout", middleware.CheckAuthorizedBearer(handlerLogout, authService))
 
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(config.Server.Port, nil)
 }

@@ -2,10 +2,8 @@ package authorization
 
 import (
 	"database/sql"
-	"errors"
 
 	user "github.com/Questee29/taxi-app_userService/models/user"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type authorizationRepository struct {
@@ -20,7 +18,7 @@ func New(db *sql.DB) *authorizationRepository {
 func (repository *authorizationRepository) GetName(phone string) (string, error) {
 	var name string
 	query := `SELECT name
-	FROM uusers
+	FROM users
 	WHERE phone=$1 
 	`
 	row := repository.db.QueryRow(query, phone)
@@ -29,36 +27,25 @@ func (repository *authorizationRepository) GetName(phone string) (string, error)
 	}
 	return name, nil
 }
-func (repository *authorizationRepository) GetUser(phone, password string) (user.AuthDetails, error) {
-	var user user.AuthDetails
+func (repository *authorizationRepository) GetUser(phone, password string) (user.ResponseAuthDetails, error) {
+	var user user.ResponseAuthDetails
 
 	query := `SELECT password
-	FROM uusers
+	FROM users
 	WHERE phone=$1 
 	`
 	row := repository.db.QueryRow(query, phone)
-	if err := row.Scan(&user.Password); err != nil {
+	if err := row.Scan(&user.HashPassword); err != nil {
 
 		return user, err
 	}
-	if repository.MatchPass(password, user.Password) {
-		user.Password = password
-		user.Phone = phone
-
-		return user, nil
-	}
-	return user, errors.New(`invalid password`)
-}
-
-func (repository *authorizationRepository) MatchPass(password, hashPassword string) bool {
-	if err := bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password)); err != nil {
-		return false
-	}
-	return true
+	user.Phone = phone
+	return user, nil
 
 }
-func (repository *authorizationRepository) FindCopies(email, phone string) (bool, error) {
-	result, err := repository.db.Query("SELECT email FROM uusers WHERE email = $1 or phone = $2", email, phone)
+
+func (repository *authorizationRepository) IsRegistred(email, phone string) (bool, error) {
+	result, err := repository.db.Query("SELECT email FROM users WHERE email = $1 or phone = $2", email, phone)
 	if err != nil {
 		return false, err
 	}
@@ -70,7 +57,7 @@ func (repository *authorizationRepository) FindCopies(email, phone string) (bool
 }
 func (repository *authorizationRepository) CreateUser(name, phone, email, hashPass string) error {
 	query := `
-	INSERT into uusers(name,phone,email,password) 
+	INSERT into users(name,phone,email,password) 
 	VALUES ($1,$2,$3,$4)`
 	if _, err := repository.db.Exec(query, name, phone, email, hashPass); err != nil {
 		return err
